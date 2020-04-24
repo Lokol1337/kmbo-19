@@ -1,324 +1,217 @@
-#pragma once
 #include <iostream>
-#include <llist.h>
-#include <cassert>
+#include "llist.h"
 #include <utility>
 
 using namespace std;
 
-LinkedList::Node::Node(const ValueType& value, Node* next)
-{
-	this->value = value;
-	this->next = next;
-}
 
-LinkedList::Node::~Node()
-{
-	// íè÷åãî íå óäàëÿåì, ò.ê. àãðåãàöèÿ
-}
 
-void LinkedList::Node::insertNext(const ValueType& value)
-{
-	Node* newNode = new Node(value, this->next);
-	this->next = newNode;
-}
-
-void LinkedList::Node::removeNext()
-{
-	Node* removeNode = this->next;
-	Node* newNext = removeNode->next;
-	delete removeNode;
-
-	this->next = newNext;
-}
-
-LinkedList::LinkedList():
-_head(nullptr), _size(0)
-{
-
-}
-
-LinkedList::LinkedList(const LinkedList& copyList)
-{
-	this->_size = copyList._size;
-	if (this->_size == 0)
+LList::LList()
     {
-		this->_head = nullptr;
-		return;
-	}
-    this->_head = new Node(copyList._head->value);
-	Node* currentNode = this->_head;
-	Node* currentCopyNode = copyList._head->next;
-	while (currentCopyNode)
+        head = nullptr;
+    }
+LList::~LList()
     {
-		currentNode->next = new Node(currentCopyNode->value);
-		currentCopyNode = currentCopyNode->next;
-		currentNode = currentNode->next;
-	}
-}
+	forceNodeDelete(this->head);
+    }
 
-LinkedList& LinkedList::operator=(const LinkedList& copyList)
-{
-	if(this == &copyList)
-    {
-		return *this;
-	}
-	LinkedList bufList(copyList);
-	this->_size = bufList._size;
-	this->_head = bufList._head;
-	return *this;
-}
 
-LinkedList::LinkedList(LinkedList&& moveList) noexcept
+int LList::operator[](size_t idx) const
 {
-	this->_size = moveList._size;
-	this->_head = moveList._head;
-	moveList._size = 0;
-	moveList._head = nullptr;
-}
-
-LinkedList& LinkedList::operator=(LinkedList&& moveList) noexcept
-{
-	if (this == &moveList) {
-		return *this;
-	}
-	forceNodeDelete(_head);
-	this->_size = moveList._size;
-	this->_head = moveList._head;
-	moveList._size = 0;
-	moveList._head = nullptr;
-	return *this;
-}
-
-LinkedList::~LinkedList()
-{
-	forceNodeDelete(_head);
-}
-
-ValueType& LinkedList::operator[](const size_t pos) const
-{
-	return getNode(pos)->value;
-}
-
-LinkedList::Node* LinkedList::getNode(const size_t pos) const
-{
-	if (pos < 0) {
-		assert(pos < 0);
-	}
-	else if (pos >= this->_size) {
-		assert(pos >= this->_size);
-	}
-	Node* bufNode = this->_head;
-	for (int i = 0; i < pos; ++i) {
+	Node* bufNode = head;
+	for (int i = 0; i < idx; ++i) {
 		bufNode = bufNode->next;
 	}
-	return bufNode;
+
+	return bufNode->data;
 }
 
-void LinkedList::insert(const size_t pos, const ValueType& value)
+int& LList::operator[](size_t idx)
 {
-	if (pos < 0) {
-		assert(pos < 0);
+	Node* bufNode = head;
+	for (int i = 0; i < idx; ++i) {
+		bufNode = bufNode->next;
 	}
-	else if (pos > this->_size) {
-		assert(pos > this->_size);
-	}
-	if (pos == 0) {
-		pushFront(value);
-	}
-	else {
-		Node* bufNode = this->_head;
-		for (size_t i = 0; i < pos-1; ++i) {
-			bufNode = bufNode->next;
-		}
-		bufNode->insertNext(value);
-		++_size;
-	}
+
+	return bufNode->data;
 }
 
-void LinkedList::insertAfterNode(Node* node, const ValueType& value)
-{
-	node->insertNext(value);
-	_size++;
-}
 
-void LinkedList::pushBack(const ValueType& value)
-{
-	if (_size == 0) {
-		pushFront(value);
-		return;
-	}
-	insert(_size, value);
-}
-
-void LinkedList::pushFront(const ValueType& value)
-{
-	_head = new Node(value, _head);
-	++_size;
-}
-
-void LinkedList::remove(const size_t pos)
-{
-    if(_head)
+void LList::push_back(int val)
+    {
+        Node *nd = new Node;
+        nd->data = val;
+        nd->next = NULL;
+        if(head == NULL)
+            head = nd;
+        else
         {
-        if(pos != 0)
+            Node *current = head;
+            while(current->next != NULL)
+                current = current->next;
+            current->next = nd;
+        }
+    }
+
+void LList::push_front(int val)
+    {
+    Node *nd = new Node;
+
+        if(head)
         {
+            Node *tmp = head;
+            head = nd;
+            nd->next = tmp;
+            nd->data = val;
+        }
+        else
+        {
+            head = nd;
+            nd->next = NULL;
+            nd->data = val;
+        }
+    }
+
+void LList::pop_back()
+    {
+    if(head)
+        {
+        Node *tmp = head;
+        Node *nd = head;
+        while(tmp->next!=NULL)
+            {
+                nd = tmp;
+                tmp = tmp->next;
+            }
+        nd->next = NULL;
+        delete tmp;
+        }
+    }
+
+void LList::pop_front()
+    {
+    if(head)
+        {
+            Node *tmp = head;
+            tmp = tmp->next;
+            delete head;
+            head = tmp;
+        }
+        else
+            cout << "The list is empty!" << endl;
+    }
+
+size_t LList::size() const{
+     int counter=0;
+     Node *nd = head;
+     while(nd)
+     {
+        nd = nd->next;
+        counter++;
+     }
+     return counter;
+}
+
+void LList::erase_at(size_t idx)
+    {
+        if(head)
+        {
+          if(idx!=0)
+            {
             int counter = 0;
-            Node *tmp = _head;
-            while(counter <= pos)
+            Node *tmp = head;
+            while(counter<=idx)
             {
                 tmp = tmp->next;
                 counter++;
             }
             counter=0;
-            Node *nd = _head;
-            while(counter < pos-1)
+            Node *nd = head;
+            while(counter<idx-1)
             {
                 nd = nd->next;
                 counter++;
             }
-            _size--;
             nd->next = tmp;
+            }
+        else
+            {
+            Node *tmp = head;
+            tmp = tmp->next;
+            delete head;
+            head = tmp;
+            }
         }
         else
+            cout<<"The list is empty!" << endl;
+    }
+void LList::insert_at(size_t idx, int val)
+    {
+        Node *tmp = head;
+        int k = 0;
+        while(tmp)
         {
-            Node *tmp = _head;
             tmp = tmp->next;
-            delete _head;
-            _size--;
-            _head = tmp;
-            }
+            k++;
         }
-    else
-        cout<<"The list is empty!" << endl;
-}
-
-void LinkedList::removeNextNode(Node* node)
-{
-    Node* removeNode = node->next;
-    node->next = removeNode->next;
-    delete removeNode;
-    _size--;
-}
-
-void LinkedList::removeFront()
-{
-    if(_head)
+        if(idx==0)
         {
-            Node *tmp = _head;
-            tmp = tmp->next;
-            delete _head;
-            _size--;
-            _head = tmp;
-        }
-    else
-        cout << "The list is empty!" << endl;
-}
+            Node *nd = new Node;
 
-void LinkedList::removeBack()
-{
-     if(_head)
-        {
-        Node *tmp = _head;
-        Node *nd = _head;
-        while(tmp->next!=nullptr)
+            if(head)
             {
-                nd = tmp;
-                tmp = tmp->next;
-
+                Node *current = head;
+                head = nd;
+                nd->next = current;
+                nd->data = val;
             }
-        nd->next = nullptr;
-
-        delete tmp;
-        _size--;
-        }
-}
-
-long long int LinkedList::findIndex(const ValueType& value) const
-{
-    Node* tmp = _head;
-    size_t i = 0;
-    size_t j = 0;
-    while(i<_size)
-    {
-        i++;
-        if(tmp->value == value)
+            else
             {
-                j = i;
-                i = _size;
-                return j;
+                head = nd;
+                nd->next = NULL;
+                nd->data = val;
             }
-        tmp = tmp->next;
-    }
-    if(j==0)
-    {
-        return 0;
-    }
-}
-
-LinkedList::Node* LinkedList::findNode(const ValueType& value) const
-{
-    size_t i = 0;
-    int j = 0;
-    Node* tmp = _head;
-    while(i < _size)
-    {
-        i++;
-        if(tmp->value == value)
-        {
-            i=_size;
-            j=1;
-            return tmp;
         }
-        tmp = tmp->next;
+        if(idx==k)
+        {
+            Node *nd = new Node;
+            nd->data = val;
+            nd->next = NULL;
+            if(head == NULL)
+                head = nd;
+            else
+            {
+                Node *current = head;
+                while(current->next != NULL)
+                    current = current->next;
+                current->next = nd;
+            }
+        }
+        if(idx!=0 && idx!=k)
+        {
+           Node *nd = head;
+           int counter = 0;
+           while(counter < idx-1)
+            {
+            nd=nd->next;
+            counter++;
+            }
+           Node *current = head;
+           counter = 0;
+           while(counter < idx)
+            {
+            current=current->next;
+            counter++;
+            }
+           Node *a = new Node;
+           nd->next = a;
+           a->next = current;
+           a->data = val;
+        }
+
     }
-    if(j==0)
-        return nullptr;
-}
 
-void LinkedList::reverse()
-{
-    Node *tmp = _head;
-    Node *next = nullptr;
-    Node *last = nullptr;
-    while(tmp)
-    {
-        next = tmp->next;
-        tmp->next = last;
-        last = tmp;
-        tmp = next;
-       }
-    _head = last;
-}
-
-LinkedList LinkedList::reverse() const
-{
-    if(_size==0)
-    {
-        return LinkedList();
-    }
-    else
-    {
-        LinkedList buf(*this);
-        buf.reverse();
-        return buf;
-    }
-}
-
-LinkedList LinkedList::getReverseList() const
-{
-    LinkedList buf(*this);
-    buf.reverse();
-    return buf;
-	//return LinkedList();
-}
-
-size_t LinkedList::size() const
-{
-	return _size;
-}
-
-void LinkedList::forceNodeDelete(Node* node)
+void LList::forceNodeDelete(Node* node)
 {
 	if (node == nullptr)
     {
@@ -328,23 +221,50 @@ void LinkedList::forceNodeDelete(Node* node)
 	delete node;
 	forceNodeDelete(nextDeleteNode);
 }
-LinkedList::LinkedList(LinkedList&& a)
+
+void LList::reverse()
+    {
+     Node *tmp = head;
+        Node *next = NULL;
+        Node *last = NULL;
+        while(tmp)
+        {
+            next = tmp->next;
+            tmp->next = last;
+            last = tmp;
+            tmp = next;
+        }
+        head = last;
+    }
+
+LList::LList(const LList& copyLList2)
 {
-	a._head = this->_head;
-}
-
-int main() {
-
-	LinkedList a;
-	a.pushBack(2);
-	a.pushBack(3);
-	a.pushBack(4);
-	a.pushBack(5);
-	LinkedList b;
-	b = a;
-	cout << a[2];
-	cout << b[2];
+    this->head = nullptr;
+    Node* currentNode = copyLList2.head;
+    while(currentNode)
+    {
+        this->push_back(currentNode->data);
+        currentNode  = currentNode->next;
+    }
 }
 
 
+LList::LList(LList&& copyLList)
+{
+    this->head = copyLList.head;
+    copyLList.head = nullptr;
+}
 
+
+int main()
+    {
+       LList a;
+       // LList c;
+        //for(int i = 0;i < 10000;i++)
+		//c.push_back(i);
+       	for(int i = 0;i < 10000;i++)
+		a.push_back(i);
+
+        LList b(move(a));
+        //LList d(c);
+    }
