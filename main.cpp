@@ -10,21 +10,13 @@ void dump(const LList& l)
 
 int main()
 {
-	LList l;
-	l.push_back(1);
-	l.push_front(0);
-	l.push_back(2);
+	LList a;
+       // LList c;
+        //for(int i = 0;i < 10000;i++)
+		//c.push_back(i);
+       	for(int i = 0;i < 10000;i++)
+		a.push_back(i);
+        LList b(move(a));
+        //LList d(c);
 
-	cout << "Stage 1: "; dump(l); cout << endl;
-
-	l.insert_at(1, 10);
-	cout << "Stage 2: "; dump(l); cout << endl;
-
-	l.erase_at(1);
-	cout << "Stage 2: "; dump(l); cout << endl;
-
-	l.reverse();
-	cout << "Stage 3: "; dump(l); cout << endl;
-
-	return 0;
 }
