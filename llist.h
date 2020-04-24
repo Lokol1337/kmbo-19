@@ -15,7 +15,7 @@ class LList{
 	public:
 	LList();
 	LList(const LList& copyLList2);
-
+	
     LList(LList&& copyLList);
 
 	~LList();                        // free resources
@@ -30,5 +30,6 @@ class LList{
 	void insert_at(size_t idx, int val); // insert item at specific position: [1 2 3 4], 1, 5 -> [1 5 2 3 4]
 	void reverse();    // reverse item sequense: [1 2 3 4] -> [4 3 2 1]
 	int operator[](size_t idx) const;
+	void forceNodeDelete(Node* node);
 };
 #endif //LLIST_H
